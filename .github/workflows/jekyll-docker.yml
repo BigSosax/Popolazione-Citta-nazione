@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerca Città</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Aumenta la dimensione del numero della superficie nel widget sinistro */
+        #widgetArea {
+            font-size: 30px; /* Aumenta la dimensione del font */
+            color: #ff6a00;  /* Colore già definito, puoi cambiarlo a tuo piacimento */
+            font-weight: bold; /* Aggiungi un po' di spessore al testo per renderlo più visibile */
+            margin-top: 10px;
+        }
+
+        /* Stili per il corpo e altri elementi */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #000000, #2d7c86, #0dc2da);
+            background-size: 400% 400%;
+            animation: gradientBG 5s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            animation: pageLoad 1s ease-out;
+        }
+
+        @keyframes pageLoad {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 500px;
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.781);
+            border-radius: 15px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0.8, 0.5);
+            text-align: center;
+            position: relative;
+            animation: fadeIn 1s ease-out;
+            
+        }
+        
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h1 {
+            font-size: 24px; 
+            color: #333; 
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 18px;
+            color: #555; 
+            display: block; 
+            margin-bottom: 12px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s ease, width 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3ea120;
+            width: 90%;
+        }
+
+        button {
+            background: #14a6e094;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+            width: 100%;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:hover {
+            background: #4b9c24;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #777;
+            text-align: center;
+        }
+
+        .description {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .error { color: red; font-size: 16px; margin-top: 12px; }
+
+        #populationChart {
+            width: 100%;
+            height: 150px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .highlight {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff6a00;
+        }
+
+        .population {
+            font-size: 25px;
+            font-weight: 500;
+            color: #ff6a00;
+        }
+
+        .widget {
+            position: fixed;
+            top: 105px;
+            right: 380px;
+            background-color: rgba(255, 255, 255, 0.822);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 250px;
+            display: none;
+            animation: slideIn 1s ease-out;
+        }
+
+        .widget-left {
+            position: fixed;
+            top: 105px;
+            left: 380px;
+            background-color: rgba(255, 255, 255, 0.822);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 250px;
+            display: none;
+            animation: slideInLeft 1s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { right: -1800px; }
+            to { right: 380px; }
+        }
+
+        @keyframes slideInLeft {
+            from { left: -1800px; }
+            to { left: 380px; }
+        }
+
+        .widget img {
+            width: 80px;
+            height: auto;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .widget .city-name {
+            font-size: 45px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .widget .country-name {
+            font-size: 20px;
+            color: #2b2a2a;
+            margin-top: -2px;
+            margin-left: 4px;
+        }
+
+        .widget .population-value {
+            font-size: 22px;
+            color: #ff6a00;
+        }
+
+        .widget .weather {
+            margin-top: 15px;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .widget .weather .temp {
+            font-size: 60px;
+            font-weight: 600;
+            color: #ff6a00;
+            margin-top: -25px;
+        }
+
+        .widget .area-value {
+            font-size: 22px;
+            color: #ff6a00;
+            margin-top: 15px;
+        }
+        .disclaimer {
+            font-size: 14px;
+            color: #0000006e;
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SCOPRI LA POPOLAZIONE</h1>
+        <label for="city"><i class="fas fa-city"></i> Inserisci il nome della città/nazione:</label>
+        <input type="text" id="city" placeholder="Es. Roma, New York, Germania, Giappone">
+        <button onclick="getCityDescription()">Cerca</button>
+        <div class="loading" id="loading">Caricamento...</div>
+        <div class="description" id="cityDescription"></div>
+        <div class="error" id="errorMessage"></div>
+        <canvas id="populationChart"></canvas>
+        <p class="disclaimer">I dati sulla popolazione e i gradi, potrebbero non essere sempre esatti.</p>
+
+    </div>
+
+    <div class="widget" id="cityWidget">
+        <div class="city-name" id="widgetCityName"></div>
+        <div class="country-name" id="widgetCountryName"></div>
+        <img id="widgetFlag" class="flag-img">
+        <div class="population-value" id="widgetPopulation"></div>
+        <div class="weather" id="widgetWeather"></div>
+    </div>
+
+    <!-- Nuovo Widget a sinistra -->
+    <div class="widget-left" id="areaWidget">
+        <div class="city-name" id="widgetCityAreaName"></div>
+        <div class="country-name" id="widgetCountryAreaName"></div>
+        <div class="area-value" id="widgetArea"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.getElementById("city").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                getCityDescription();
+            }
+        });
+
+        function getCityDescription() {
+    var city = document.getElementById("city").value.trim();
+    var errorMessage = document.getElementById("errorMessage");
+    var cityDescription = document.getElementById("cityDescription");
+    var loading = document.getElementById("loading");
+    var populationChartCanvas = document.getElementById("populationChart");
+    var ctx = populationChartCanvas.getContext('2d');
+    var cityWidget = document.getElementById("cityWidget");
+    var widgetCityName = document.getElementById("widgetCityName");
+    var widgetCountryName = document.getElementById("widgetCountryName");
+    var widgetFlag = document.getElementById("widgetFlag");
+    var widgetPopulation = document.getElementById("widgetPopulation");
+    var widgetWeather = document.getElementById("widgetWeather");
+    var areaWidget = document.getElementById("areaWidget");
+    var widgetCityAreaName = document.getElementById("widgetCityAreaName");
+    var widgetCountryAreaName = document.getElementById("widgetCountryAreaName");
+    var widgetArea = document.getElementById("widgetArea");
+
+    errorMessage.innerText = "";
+    cityDescription.innerText = "";
+    populationChartCanvas.style.display = "none"; // Nascondi il grafico inizialmente
+    if (window.populationChartInstance) {
+        window.populationChartInstance.destroy(); // Distruggi il grafico precedente se esiste
+    }
+
+    if (!city) {
+        errorMessage.innerText = "Per favore, inserisci il nome di una città!";
+        return;
+    }
+
+    loading.style.display = "block";
+    cityWidget.style.display = "none";
+    areaWidget.style.display = "none"; // Nascondi il widget della superficie
+
+    var apiUrl = `https://secure.geonames.org/searchJSON?q=${city}&maxRows=1&lang=it&username=osa`;
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            loading.style.display = "none";
+            if (data.geonames && data.geonames.length > 0) {
+                var cityInfo = data.geonames[0];
+                var country = cityInfo.countryName;
+                var population = cityInfo.population ? cityInfo.population : 0;
+                var description = `${city.charAt(0).toUpperCase() + city.slice(1)} ha una popolazione di circa `;
+
+                cityDescription.innerHTML = `<span class="highlight"></span> Ha una popolazione di circa <span class="population">0</span> `;
+
+                animatePopulationCounter(population);
+
+                var countryFlag = cityInfo.countryCode.toLowerCase();
+                var flagUrl = `https://flagcdn.com/w320/${countryFlag}.png`;
+                var flagImg = document.querySelector(".flag-img");
+
+                if (!flagImg) {
+                    flagImg = document.createElement("img");
+                    flagImg.classList.add("flag-img");
+                    document.querySelector(".container").appendChild(flagImg);
+                }
+                flagImg.src = flagUrl;
+
+                // Widget visibility
+                cityWidget.style.display = "block";
+                widgetCityName.innerText = cityInfo.name;
+                widgetCountryName.innerText = country;
+
+                // Chiamata alla REST Countries API per ottenere la superficie
+                var countryApiUrl = `https://restcountries.com/v3.1/name/${country}`;
+                fetch(countryApiUrl)
+                    .then(response => response.json())
+                    .then(countryData => {
+                        if (countryData && countryData.length > 0) {
+                            var area = countryData[0].area; // Superficie in km²
+                            // Aggiungi la superficie nel widget sinistro
+                            areaWidget.style.display = "block";
+                            widgetCountryAreaName.innerText = "Superficie di " + country; // Aggiungi il testo prima del nome del paese
+                            widgetArea.innerText = `${area.toLocaleString()} km²`;
+                        } else {
+                            widgetArea.innerText = "Dati non disponibili";
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Errore nell\'ottenere i dati dalla REST Countries API:', error);
+                        widgetArea.innerText = "Errore nel recupero dei dati della superficie.";
+                    });
+
+                // Visualizzazione del grafico della popolazione
+                populationChartCanvas.style.display = "block"; // Mostra il grafico
+                window.populationChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [cityInfo.name],
+                        datasets: [{
+                            label: 'Popolazione',
+                            data: [population],
+                            backgroundColor: '#ff6a00',
+                            borderColor: '#ff6a00',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                suggestedMax: population * 1.1,
+                                ticks: {
+                                    stepSize: Math.ceil(population / 5),
+                                    callback: function(value) {
+                                        return value.toLocaleString('it-IT');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                var weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&lang=it&appid=a3cbdb7d654701692b80a7c1af6680eb`;
+                fetch(weatherApiUrl)
+                    .then(response => response.json())
+                    .then(weatherData => {
+                        var temperature = (weatherData.main.temp - 273.15).toFixed(1); // Temperatura in °C
+                        widgetWeather.innerHTML = `<div class="temp">${temperature}°C</div>`; // Solo la temperatura
+                    });
+            } else {
+                errorMessage.innerText = "Città non trovata!";
+            }
+        });
+}
+
+
+
+        function animatePopulationCounter(finalPopulation) {
+            let currentPopulation = 0;
+            const populationElement = document.querySelector(".population");
+    
+            const speed = finalPopulation > 1000000 ? 5 : finalPopulation > 500000 ? 10 : 20;
+            const interval = setInterval(() => {
+                if (currentPopulation < finalPopulation) {
+                    currentPopulation += Math.ceil(finalPopulation / 100);
+                    populationElement.innerText = currentPopulation.toLocaleString('it-IT');
+                } else {
+                    clearInterval(interval);
+                    populationElement.innerText = finalPopulation.toLocaleString('it-IT');
+                }
+            }, speed);
+        }
+    </script>
+</body>
+</html>
